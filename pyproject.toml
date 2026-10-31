@@ -1,0 +1,40 @@
+[project]
+name = "emporio-agent"
+version = "0.1.0"
+description = "Text-message customer service agent for Empório da Música, using Gemini function calling."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=2.34.0",
+    "pandas>=3.1.0",
+    "pypdf>=6.21.4",
+    "python-dotenv>=1.2.4",
+    "streamlit>=1.66.1",
+    "tzdata>=2026.6",
+]
+
+# Installing the package (editable, via `uv sync`) lets app.py, scripts/ and
+# tests/ all import `emporio_agent` without touching sys.path.
+[build-system]
+requires = ["uv_build>=0.11.21,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "emporio_agent"
+module-root = ""
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
