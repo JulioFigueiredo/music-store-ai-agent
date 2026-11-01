@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from emporio_agent.data_loader import StoreData, mentions_other_brand, read_csv
+from emporio_agent.data.store_data import StoreData, mentions_other_brand, read_csv
 
 
 def product(data: StoreData, product_id: int) -> dict:

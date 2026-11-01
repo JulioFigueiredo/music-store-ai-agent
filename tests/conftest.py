@@ -3,8 +3,8 @@ from datetime import datetime
 import pytest
 
 from emporio_agent import config
-from emporio_agent.data_loader import StoreData, load_store_data
-from emporio_agent.policies import load_policy_sections
+from emporio_agent.data.policies import load_policy_sections
+from emporio_agent.data.store_data import StoreData, load_store_data
 from emporio_agent.tools.catalog import Catalog
 from emporio_agent.tools.orders import OrderTools
 from emporio_agent.tools.products import ProductTools

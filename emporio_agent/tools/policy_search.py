@@ -1,6 +1,6 @@
-"""Policy tool: search_policies, a thin wrapper over policies.py."""
+"""Policy tool: search_policies, a thin wrapper over data/policies.py."""
 
-from emporio_agent.policies import PolicySection, search_policy_sections
+from emporio_agent.data.policies import PolicySection, search_policy_sections
 from emporio_agent.tools.common import ToolResult
 
 

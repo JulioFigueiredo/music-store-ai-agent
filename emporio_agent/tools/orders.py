@@ -7,7 +7,7 @@ given matches that order's customer, and only what the customer needs.
 from collections.abc import Callable
 from datetime import date, datetime
 
-from emporio_agent.data_loader import StoreData
+from emporio_agent.data.store_data import StoreData
 from emporio_agent.text_utils import digits_only, normalize_email
 from emporio_agent.tools.catalog import Catalog
 from emporio_agent.tools.common import (

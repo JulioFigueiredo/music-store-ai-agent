@@ -5,7 +5,7 @@ highest active discount applies), they last only while stock lasts, and a
 promotional price is always shown with the original price and the discount.
 """
 
-from emporio_agent.data_loader import StoreData
+from emporio_agent.data.store_data import StoreData
 from emporio_agent.tools.catalog import Catalog
 from emporio_agent.tools.common import (
     Record,

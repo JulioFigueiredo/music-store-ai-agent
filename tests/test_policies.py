@@ -1,6 +1,6 @@
 import pytest
 
-from emporio_agent.policies import (
+from emporio_agent.data.policies import (
     PolicySection,
     apply_corrections,
     load_policy_sections,

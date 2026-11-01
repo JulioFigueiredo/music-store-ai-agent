@@ -4,8 +4,8 @@ from collections.abc import Callable
 from datetime import datetime
 
 from emporio_agent import config
-from emporio_agent.data_loader import StoreData
-from emporio_agent.policies import PolicySection
+from emporio_agent.data.policies import PolicySection
+from emporio_agent.data.store_data import StoreData
 from emporio_agent.tools.catalog import Catalog
 from emporio_agent.tools.common import ToolResult
 from emporio_agent.tools.orders import OrderTools

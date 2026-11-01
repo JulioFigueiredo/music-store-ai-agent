@@ -4,7 +4,7 @@ matching and lookups shared by the product and promotion tools.
 This module has no tools of its own; it is the read model the tools use.
 """
 
-from emporio_agent.data_loader import StoreData
+from emporio_agent.data.store_data import StoreData
 from emporio_agent.text_utils import (
     compact,
     matches_all_words,
