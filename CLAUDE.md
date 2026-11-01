@@ -302,7 +302,7 @@ Build a **simple Streamlit chat UI** in `app.py`, run with `uv run streamlit run
 ├── .python-version
 ├── .env.example
 ├── .gitignore
-├── app.py                    # Streamlit chat UI (thin)
+├── app.py                    # Streamlit entry point (only calls ui.app.main)
 ├── data/                     # provided files, read-only
 ├── docs/
 │   └── data_notes.md         # findings from section 4
@@ -322,9 +322,13 @@ Build a **simple Streamlit chat UI** in `app.py`, run with `uv run streamlit run
 │   │   ├── payments.py       # calculate_payment_options
 │   │   ├── policy_search.py  # search_policies
 │   │   └── registry.py       # build_tool_registry(): name -> function
-│   └── agent/                # the only package that knows about the LLM
-│       ├── prompts.py        # system prompt (pt-BR)
-│       └── agent.py          # Agent class: history + tool loop
+│   ├── agent/                # the only package that knows about the LLM
+│   │   ├── prompts.py        # system prompt (pt-BR)
+│   │   └── agent.py          # Agent class: history + tool loop
+│   └── ui/                   # Streamlit chat (no business logic)
+│       ├── app.py            # page flow: sidebar, history, chat input
+│       ├── session.py        # one Agent per browser session, cached data
+│       └── components.py     # messages, tool-call expander, sidebar
 ├── scripts/
 │   └── generate_examples.py  # scripted conversations -> examples/
 ├── tests/                    # one test file per module
@@ -336,7 +340,9 @@ Build a **simple Streamlit chat UI** in `app.py`, run with `uv run streamlit run
 │   ├── test_promotions.py
 │   ├── test_orders.py
 │   ├── test_payments.py
-│   └── test_tool_registry.py
+│   ├── test_tool_registry.py
+│   ├── test_agent.py         # agent loop with a scripted fake client
+│   └── test_ui.py            # Streamlit AppTest with a fake agent
 └── examples/
     ├── 01_product_search.md
     ├── 02_price_lookup.md
