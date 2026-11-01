@@ -40,10 +40,17 @@ DATA_FILES = (
 # --- LLM -------------------------------------------------------------------
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+# gemini-3.8-flash allows only 20 requests/day on the free tier, too few to
+# run the examples (each customer turn takes 2-3 model calls).
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 # Low temperature: answers should be consistent and factual, not creative.
 GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
-# Max model -> tools -> model round trips in a single turn before giving up.
+# Attempts per API call (including the first) when Gemini returns a
+# transient server error such as 503 "high demand"; the SDK backs off between
+# attempts.
+GEMINI_RETRY_ATTEMPTS = int(os.getenv("GEMINI_RETRY_ATTEMPTS", "4"))
+# Max model calls in one customer turn (each call may request tools). Stops a
+# runaway tool loop; a normal turn needs 1 to 3 calls.
 MAX_TOOL_ROUNDS = int(os.getenv("MAX_TOOL_ROUNDS", "5"))
 
 # --- Payment rules (policies manual, section 3) ----------------------------
@@ -55,7 +62,7 @@ PIX_DISCOUNT_PERCENT = 5  # 3: "5% de desconto sobre o preço de tabela"
 MAX_INSTALLMENTS = 12  # 3: "Até 12x sem juros"
 # (highest installment count in the tier, minimum installment in BRL), from
 # 3.1. The 1x-3x minimum of R$ 50 is our reading of an ambiguous rule (see
-# POLICY_CORRECTIONS in policies.py).
+# POLICY_CORRECTIONS in data/policies.py).
 INSTALLMENT_TIERS = ((3, 50.0), (6, 80.0), (12, 100.0))
 # 3.1: combining payment methods is allowed "para compras acima de R$ 2.000,00".
 COMBINED_PAYMENT_MIN_TOTAL = 2000.0

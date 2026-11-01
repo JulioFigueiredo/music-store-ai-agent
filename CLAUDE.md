@@ -309,10 +309,11 @@ Build a **simple Streamlit chat UI** in `app.py`, run with `uv run streamlit run
 ├── emporio_agent/
 │   ├── __init__.py
 │   ├── config.py             # settings from environment variables
-│   ├── data_loader.py        # loads and normalizes CSVs once
-│   ├── policies.py           # PDF -> sections -> keyword search
 │   ├── text_utils.py         # normalize(), fuzzy matching helpers
-│   ├── tools/                # one module per domain
+│   ├── data/                 # data sources, loaded once and cleaned
+│   │   ├── store_data.py     # CSVs -> StoreData (KNOWN_BRANDS check)
+│   │   └── policies.py       # PDF -> sections -> keyword search
+│   ├── tools/                # business rules, one module per domain
 │   │   ├── common.py         # shared types and helpers (money, dates)
 │   │   ├── catalog.py        # products/categories: indexes and matching
 │   │   ├── promotions.py     # promotion rules + get_active_promotions
@@ -321,14 +322,15 @@ Build a **simple Streamlit chat UI** in `app.py`, run with `uv run streamlit run
 │   │   ├── payments.py       # calculate_payment_options
 │   │   ├── policy_search.py  # search_policies
 │   │   └── registry.py       # build_tool_registry(): name -> function
-│   ├── prompts.py            # system prompt (pt-BR)
-│   └── agent.py              # Agent class: history + tool loop
+│   └── agent/                # the only package that knows about the LLM
+│       ├── prompts.py        # system prompt (pt-BR)
+│       └── agent.py          # Agent class: history + tool loop
 ├── scripts/
 │   └── generate_examples.py  # scripted conversations -> examples/
 ├── tests/                    # one test file per module
 │   ├── conftest.py           # shared fixtures (real data, fixed clock)
 │   ├── test_text_utils.py
-│   ├── test_data_loader.py
+│   ├── test_store_data.py
 │   ├── test_policies.py
 │   ├── test_products.py
 │   ├── test_promotions.py
