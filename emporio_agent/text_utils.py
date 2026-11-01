@@ -15,6 +15,11 @@ _JOINING_PUNCTUATION = re.compile(r"[-'’]")
 _OTHER_PUNCTUATION = re.compile(r"[^a-z0-9\s]")
 _WHITESPACE = re.compile(r"\s+")
 
+# Plural endings that do not simply add "s": "violões" -> "violão",
+# "metais" -> "metal". Checked in order, before the plain "s".
+PLURAL_ENDINGS = (("oes", "ao"), ("aes", "ao"), ("ais", "al"))
+FILLER_WORDS = {"com", "para", "pra", "por", "que", "uma", "dos", "das"}
+
 
 def strip_accents(text: str) -> str:
     """Remove accents: "Violão Três" -> "Violao Tres"."""
@@ -56,6 +61,33 @@ def contains_phrase(text: str, phrase: str) -> bool:
     return f" {normalize(phrase)} " in f" {normalize(text)} "
 
 
+def singular(word: str) -> str:
+    """Rough Portuguese singular of a normalized word.
+
+    Without it, "violao" is closer to "violas" (orchestral strings) than to
+    "violoes". Short words are kept as they are ("aco", "pix").
+    """
+    if len(word) <= 3:
+        return word
+    for plural_ending, singular_ending in PLURAL_ENDINGS:
+        if word.endswith(plural_ending):
+            return word[: -len(plural_ending)] + singular_ending
+    return word[:-1] if word.endswith("s") else word
+
+
+def comparable_words(text: str) -> list[str]:
+    """Normalized, singular words of a text, ready to compare."""
+    return [singular(word) for word in normalize(text).split()]
+
+
+def best_word_ratio(word: str, text_words: list[str]) -> float:
+    """Similarity (0 to 1) between a word and the closest word in a list."""
+    return max(
+        (SequenceMatcher(None, word, text_word).ratio() for text_word in text_words),
+        default=0.0,
+    )
+
+
 def word_similarity(query: str, text: str) -> float:
     """Score from 0 to 1: how well the query's words match the text's words.
 
@@ -64,18 +96,29 @@ def word_similarity(query: str, text: str) -> float:
     against long product names; comparing word by word tolerates typos and
     missing words ("gianini gn15" vs. "Giannini GN-15 Nylon Cedr Natural").
     """
-    query_words = normalize(query).split()
-    text_words = normalize(text).split()
+    query_words = comparable_words(query)
+    text_words = comparable_words(text)
     if not query_words or not text_words:
         return 0.0
-    best_scores = [
-        max(
-            SequenceMatcher(None, query_word, text_word).ratio()
-            for text_word in text_words
-        )
-        for query_word in query_words
+    scores = [best_word_ratio(word, text_words) for word in query_words]
+    return sum(scores) / len(scores)
+
+
+def matches_all_words(query: str, text: str, min_ratio: float) -> bool:
+    """True if every meaningful query word has a similar word in the text.
+
+    Used to filter the catalog: "yamaha nylon" must match both words. Filler
+    words ("com", "para") and words under 3 letters are ignored.
+    """
+    query_words = [
+        word
+        for word in comparable_words(query)
+        if len(word) >= 3 and word not in FILLER_WORDS
     ]
-    return sum(best_scores) / len(best_scores)
+    text_words = comparable_words(text)
+    return bool(query_words) and all(
+        best_word_ratio(word, text_words) >= min_ratio for word in query_words
+    )
 
 
 def rank_by_similarity(

@@ -46,6 +46,20 @@ GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
 # Max model -> tools -> model round trips in a single turn before giving up.
 MAX_TOOL_ROUNDS = int(os.getenv("MAX_TOOL_ROUNDS", "5"))
 
+# --- Payment rules (policies manual, section 3) ----------------------------
+
+# These numbers repeat the manual on purpose: payment math is done in Python,
+# never by the LLM, and arithmetic accuracy matters more here than keeping a
+# single source of truth.
+PIX_DISCOUNT_PERCENT = 5  # 3: "5% de desconto sobre o preço de tabela"
+MAX_INSTALLMENTS = 12  # 3: "Até 12x sem juros"
+# (highest installment count in the tier, minimum installment in BRL), from
+# 3.1. The 1x-3x minimum of R$ 50 is our reading of an ambiguous rule (see
+# POLICY_CORRECTIONS in policies.py).
+INSTALLMENT_TIERS = ((3, 50.0), (6, 80.0), (12, 100.0))
+# 3.1: combining payment methods is allowed "para compras acima de R$ 2.000,00".
+COMBINED_PAYMENT_MIN_TOTAL = 2000.0
+
 # --- Reference date and time -----------------------------------------------
 
 # The store is in Campo Grande/MS (UTC-4, no daylight saving time).
