@@ -1,0 +1,112 @@
+"""Settings loaded from environment variables, with sensible defaults.
+
+Every tunable value lives here so the rest of the code has no magic numbers.
+"""
+
+import os
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# --- Paths -----------------------------------------------------------------
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+
+# Exact file names (no globbing: "*orders.csv" would also match order_items).
+CSV_PREFIX = "desafio_tecnico_ai_eng - "
+CATEGORIES_CSV = DATA_DIR / f"{CSV_PREFIX}categories.csv"
+PRODUCTS_CSV = DATA_DIR / f"{CSV_PREFIX}products.csv"
+CUSTOMERS_CSV = DATA_DIR / f"{CSV_PREFIX}customers.csv"
+ORDERS_CSV = DATA_DIR / f"{CSV_PREFIX}orders.csv"
+ORDER_ITEMS_CSV = DATA_DIR / f"{CSV_PREFIX}order_items.csv"
+PROMOTIONS_CSV = DATA_DIR / f"{CSV_PREFIX}promotions.csv"
+POLICIES_PDF = DATA_DIR / "políticas_da_loja.pdf"
+
+DATA_FILES = (
+    CATEGORIES_CSV,
+    PRODUCTS_CSV,
+    CUSTOMERS_CSV,
+    ORDERS_CSV,
+    ORDER_ITEMS_CSV,
+    PROMOTIONS_CSV,
+    POLICIES_PDF,
+)
+
+# --- LLM -------------------------------------------------------------------
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+# Flash-Lite: the Flash models (3.8, 3.6) allow only 20 requests/day on the
+# free tier, and each customer turn takes 2-3 model calls. Flash-Lite allows
+# about 500/day, so evaluators can actually use the chat for free.
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+# Low temperature: answers should be consistent and factual, not creative.
+GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
+# Attempts per API call (including the first) when Gemini returns a
+# transient server error such as 503 "high demand"; the SDK backs off between
+# attempts.
+GEMINI_RETRY_ATTEMPTS = int(os.getenv("GEMINI_RETRY_ATTEMPTS", "4"))
+# Max model calls in one customer turn (each call may request tools). Stops a
+# runaway tool loop; a normal turn needs 1 to 3 calls.
+MAX_TOOL_ROUNDS = int(os.getenv("MAX_TOOL_ROUNDS", "5"))
+
+# --- Payment rules (policies manual, section 3) ----------------------------
+
+# These numbers repeat the manual on purpose: payment math is done in Python,
+# never by the LLM, and arithmetic accuracy matters more here than keeping a
+# single source of truth.
+PIX_DISCOUNT_PERCENT = 5  # 3: "5% de desconto sobre o preço de tabela"
+MAX_INSTALLMENTS = 12  # 3: "Até 12x sem juros"
+# (highest installment count in the tier, minimum installment in BRL), from
+# 3.1. The 1x-3x minimum of R$ 50 is our reading of an ambiguous rule (see
+# POLICY_CORRECTIONS in data/policies.py).
+INSTALLMENT_TIERS = ((3, 50.0), (6, 80.0), (12, 100.0))
+# 3.1: combining payment methods is allowed "para compras acima de R$ 2.000,00".
+COMBINED_PAYMENT_MIN_TOTAL = 2000.0
+
+# --- Reference date and time -----------------------------------------------
+
+# The store is in Campo Grande/MS (UTC-4, no daylight saving time).
+STORE_TIMEZONE = ZoneInfo("America/Campo_Grande")
+# The dataset is frozen in March 2026, so a fixed "now" keeps order timelines
+# and return deadlines realistic. Unset it to use the real current time.
+STORE_NOW = os.getenv("STORE_NOW", "")
+
+
+def get_store_now() -> datetime:
+    """Return the store's current date and time (timezone-aware).
+
+    Uses STORE_NOW when set (ISO format, e.g. "2026-03-25T10:30"), otherwise
+    the real current time in Campo Grande. Tools and the system prompt both
+    call this, so they always agree on what "now" is.
+    """
+    if not STORE_NOW:
+        return datetime.now(STORE_TIMEZONE)
+    simulated = datetime.fromisoformat(STORE_NOW)
+    if simulated.tzinfo is None:
+        simulated = simulated.replace(tzinfo=STORE_TIMEZONE)
+    return simulated
+
+
+def check_data_files() -> None:
+    """Fail fast with a clear message if any provided data file is missing."""
+    missing = [path.name for path in DATA_FILES if not path.exists()]
+    if missing:
+        raise FileNotFoundError(f"Missing data files in {DATA_DIR}: {missing}")
+
+
+def require_api_key() -> str:
+    """Return the Gemini API key, or fail fast with setup instructions.
+
+    Not called at import time, so tests can run offline without a key.
+    """
+    if not GEMINI_API_KEY:
+        raise RuntimeError(
+            "GEMINI_API_KEY is not set. Copy .env.example to .env and add a "
+            "free key from https://aistudio.google.com/apikey"
+        )
+    return GEMINI_API_KEY

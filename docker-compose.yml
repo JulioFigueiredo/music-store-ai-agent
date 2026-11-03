@@ -1,0 +1,9 @@
+# docker compose up --build  ->  http://localhost:8501
+services:
+  chat:
+    build: .
+    ports:
+      - "8501:8501"
+    # GEMINI_API_KEY, GEMINI_MODEL and STORE_NOW come from .env at runtime;
+    # the key is never baked into the image.
+    env_file: .env
