@@ -185,7 +185,7 @@ Where the case or the data was ambiguous, the simplest reasonable reading was ch
 
 This project was built with **Claude Code** (Anthropic's coding agent, model Claude Opus 5.5) in VS Code.
 
-- **Julio** defined the scope, the architecture constraints and the quality bar in [`CLAUDE.md`](CLAUDE.md), which is in the repository and documents the intended workflow. He reviewed each phase before committing it himself, drove the structural refactors (splitting the tools into one module per domain, then grouping the code into `data/`, `tools/`, `agent/` and `ui/` packages for maintainability), and made the trade-off calls that came up along the way, such as switching to a model with a larger free tier when the Flash quotas proved too small.
+- **Julio** defined the scope, the architecture constraints and the quality bar in [`CLAUDE.md`](CLAUDE.md), which is in the repository and documents the intended workflow. He reviewed and tested each phase before committing it himself, drove the structural refactors (splitting the tools into one module per domain, then grouping the code into `data/`, `tools/`, `agent/` and `ui/` packages for maintainability), proposed the Docker setup, and made the trade-off calls that came up along the way, such as switching to a model with a larger free tier when the Flash quotas proved too small.
 - **Claude** inspected the data, wrote the code, tests and documentation following `CLAUDE.md`, ran the checks (`pytest`, `ruff`, `mypy`) and the live tests against Gemini, and surfaced problems found along the way for a decision: the PDF extraction issue, the extra description conflicts, the API rejecting `role="tool"`, and the free-tier quota.
 
 The commit history follows the phases in `CLAUDE.md` section 9.
