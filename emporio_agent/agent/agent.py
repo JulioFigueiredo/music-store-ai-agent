@@ -167,11 +167,16 @@ class Agent:
             return {"error": f"The tool could not run: {error}"}
 
 
-def create_agent(data: StoreData, policy_sections: list[PolicySection]) -> Agent:
+def create_agent(
+    data: StoreData,
+    policy_sections: list[PolicySection],
+    clock: Callable[[], datetime] = config.get_store_now,
+) -> Agent:
     """Build an agent over already-loaded data. Fails fast without an API key.
 
     Transient server errors (such as 503 "high demand") are retried by the
-    SDK with exponential backoff before the agent falls back.
+    SDK with exponential backoff before the agent falls back. `clock` is
+    "now" for both the prompt and the tools (the example script fixes it).
     """
     retry_options = types.HttpRetryOptions(
         attempts=config.GEMINI_RETRY_ATTEMPTS,
@@ -182,7 +187,8 @@ def create_agent(data: StoreData, policy_sections: list[PolicySection]) -> Agent
         api_key=config.require_api_key(),
         http_options=types.HttpOptions(retry_options=retry_options),
     )
-    return Agent(client, build_tool_registry(data, policy_sections))
+    tools = build_tool_registry(data, policy_sections, clock)
+    return Agent(client, tools, clock=clock)
 
 
 def text_content(role: str, text: str) -> types.Content:

@@ -40,9 +40,10 @@ DATA_FILES = (
 # --- LLM -------------------------------------------------------------------
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-# gemini-3.8-flash allows only 20 requests/day on the free tier, too few to
-# run the examples (each customer turn takes 2-3 model calls).
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+# Flash-Lite: the Flash models (3.8, 3.6) allow only 20 requests/day on the
+# free tier, and each customer turn takes 2-3 model calls. Flash-Lite allows
+# about 500/day, so evaluators can actually use the chat for free.
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 # Low temperature: answers should be consistent and factual, not creative.
 GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
 # Attempts per API call (including the first) when Gemini returns a
